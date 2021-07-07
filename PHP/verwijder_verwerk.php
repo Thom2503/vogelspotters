@@ -7,24 +7,26 @@
 
   require 'config.inc.php';
 
-  $titel = $_POST['titel'];
-  $uuid = $_POST['uuid'];
-  $seizoen = $_POST['seizoen'];
-  $tekst = $_POST['text'];
-
-  $file = $_POST['filename'];
-
   if (isset($_SESSION['token']) && $_SESSION['token'] == $_POST['csrf_token'])
   {
 
     if (isset($_POST['submit']))
     {
+
+      $titel = filter_var(INPUT_POST, 'titel', FILTER_SANITIZE_STRING);
+      $uuid = filter_var(INPUT_POST, 'uuid', FILTER_SANITIZE_STRING);
+      $seizoen = filter_var(INPUT_POST, 'seizoen', FILTER_SANITIZE_NUMBER_INT);
+      $tekst = filter_var(INPUT_POST, 'text', FILTER_DEFAULT);
+
+      $file = filter_var(INPUT_POST, 'filename', FILTER_DEFAULT);
+
       $pattern_uuid = '/^[0-9A-F]{8}-[0-9A-F]{4}-4[0-9A-F]{3}-[89AB][0-9A-F]{3}-[0-9A-F]{12}$/i';
 
       if (!empty($titel) &&
           !empty($uuid) &&
           !empty($seizoen) &&
-          !empty($tekst))
+          !empty($tekst) &&
+          !empty($file))
       {
         if (preg_match($pattern_uuid, $uuid))
         {
@@ -41,11 +43,11 @@
             $result = mysqli_stmt_get_result($stmt);
 
             //path naar de uploads folder om de photo te kunnen Verwijderen
-            $path = "../Uploads/";
+            $path = "../Uploads/".$file;
 
             if (!$result)
             {
-              unlink($path.$file);
+              unlink($path);
               header("location: hoofdpagina.php?s=$seizoen");
               exit;
             } else {
